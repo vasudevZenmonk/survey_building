@@ -13,7 +13,7 @@ import { Survey } from '../survey/survey.entity';
 import { surveyGroupOptionEnum } from './enum/survey_group_option.enum';
 import { surveyGroupLanguageEnum } from './enum/survey_group_language.enum';
 
-@Entity('survey-booking')
+@Entity('survey-group')
 export class SurveyGroup {
   @PrimaryGeneratedColumn()
   id: number;
@@ -27,7 +27,7 @@ export class SurveyGroup {
   @Column()
   abbr: string;
 
-  @Column()
+  @Column({ type: 'jsonb', nullable: true })
   options: {
     modality: surveyGroupOptionEnum;
     language: surveyGroupLanguageEnum;

@@ -30,6 +30,7 @@ export class TransactionInterceptor implements NestInterceptor {
     return next.handle().pipe(
       // concatMap gets called when route handler completes successfully
       concatMap(async (data) => {
+        console.log(data);
         await queryRunner.commitTransaction();
         return data;
       }),

@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Generated,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -17,6 +18,7 @@ export class Question {
   id: number;
 
   @Column({ type: 'uuid' })
+  @Generated('uuid')
   uuid: string;
 
   @Column()
@@ -40,9 +42,9 @@ export class Question {
   @ManyToOne(() => QuestionType, (question_type) => question_type.questions)
   question_type: QuestionType;
 
-  @OneToMany(
-    () => SurveyQuestion,
-    (survey_question) => survey_question.questions,
-  )
-  survey_question: SurveyQuestion;
+    @OneToMany(
+      () => SurveyQuestion,
+      (survey_question) => survey_question.questions,
+    )
+    survey_question: SurveyQuestion;
 }

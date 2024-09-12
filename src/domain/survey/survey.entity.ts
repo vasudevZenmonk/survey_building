@@ -1,7 +1,14 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Generated,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { surveyStateEnum } from './enum/survey-state.enum';
-import { SurveyQuestion } from '../survey_question/survey_question.entity';
 import { SurveyGroup } from '../survey_group/survey-group.entity';
+import { SurveyQuestion } from '../survey_question/survey_question.entity';
 
 @Entity('survey')
 export class Survey {
@@ -9,34 +16,39 @@ export class Survey {
   id: number;
 
   @Column({ type: 'uuid' })
+  @Generated('uuid')
   uuid: string;
 
-  @Column()
+  @Column({ type: 'integer', nullable: true })
   survey_reference_code: number;
 
   @Column()
   survey_group_id: number;
 
-  @Column({ type: 'string', nullable: false })
+  @Column({ nullable: false })
   name: string;
 
-  @Column({ type: 'string', nullable: false })
+  @Column({ nullable: false })
   abbr: string;
 
-  @Column({ type: 'enum', enum: surveyStateEnum })
-  state: string;
+  @Column({
+    type: 'enum',
+    enum: surveyStateEnum,
+    default: surveyStateEnum.IN_CONSTRUCTION,
+  })
+  state: surveyStateEnum;
 
-  @Column()
+  @Column({ type: 'jsonb', nullable: true })
   options: {
     url: string;
     is_mandatory: boolean;
   };
 
-  @Column({ type: 'datetime' })
-  published_at: string;
+  @Column({ type: 'date', nullable: false, default: () => 'CURRENT_DATE' })
+  published_at: Date;
 
-  @Column({ type: 'datetime' })
-  publication_status_changed_at: string;
+  @Column({ type: 'timestamp', nullable: true })
+  publication_status_changed_at: Date;
 
   @OneToMany(() => SurveyQuestion, (survey_question) => survey_question.surveys)
   survey_question: SurveyQuestion;

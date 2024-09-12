@@ -17,8 +17,8 @@ export const dataSourceOptions = (
   synchronize: false,
   migrationsTableName: 'migrations',
   migrations: ['dist/src/infrastructure/database/migrations/*.js'],
-  // seeds: ['dist/src/infrastructure/database/seeders/*.js'],
-  // seedTracking: true,
+  seeds: ['dist/src/infrastructure/database/seeders/*.js'],
+  seedTracking: true,
 });
 
 export const dataSource = new DataSource(

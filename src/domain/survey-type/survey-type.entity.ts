@@ -3,18 +3,20 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Generated,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SurveyGroup } from '../survey_group/survey-group.entity';
 
-@Entity('survey-setting')
+@Entity('survey-type')
 export class SurveyType {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'uuid' })
+  @Generated('uuid')
   uuid: string;
 
   @Column()

@@ -3,12 +3,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Generated,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Question } from '../question/question.entity';
-// import { Question } from "../question/question.entity";
 
 @Entity()
 export class QuestionType {
@@ -16,6 +16,7 @@ export class QuestionType {
   id: number;
 
   @Column({ type: 'uuid' })
+  @Generated('uuid')
   uuid: string;
 
   @Column()
