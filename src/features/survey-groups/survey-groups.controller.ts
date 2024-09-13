@@ -28,7 +28,8 @@ export class SurveyGroupController {
       });
       return response;
     } catch (error) {
-      throw new Error(error.message); 
+      console.log(error);
+      throw new Error(error.message);
     }
   }
 

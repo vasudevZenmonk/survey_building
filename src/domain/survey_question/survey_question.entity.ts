@@ -32,13 +32,13 @@ export class SurveyQuestion {
   is_mandatory: boolean;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: string;
+  deleted_at: Date;
 
   @ManyToOne(() => Question, (question) => question.survey_question)
   questions: Question[];

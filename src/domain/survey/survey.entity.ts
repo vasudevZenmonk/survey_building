@@ -1,31 +1,37 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Generated,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { surveyStateEnum } from './enum/survey-state.enum';
 import { SurveyGroup } from '../survey_group/survey-group.entity';
 import { SurveyQuestion } from '../survey_question/survey_question.entity';
+import { IsBoolean, IsEmpty, IsNotEmpty, isURL, IsUrl, Length } from 'class-validator';
+import { OptionsDto } from './dto/options.dto';
 
 @Entity('survey')
 export class Survey {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'char', nullable: false })
   @Generated('uuid')
   uuid: string;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'int', nullable: true })
   survey_reference_code: number;
 
-  @Column()
+  @Column({ type: 'int', nullable: false })
   survey_group_id: number;
 
-  @Column({ nullable: false })
+  @Column({ type: 'text', nullable: false })
+  @Length(1, 100, { message: 'Name must be between 1 and 100 characters' })
   name: string;
 
   @Column({ nullable: false })
@@ -39,16 +45,23 @@ export class Survey {
   state: surveyStateEnum;
 
   @Column({ type: 'jsonb', nullable: true })
-  options: {
-    url: string;
-    is_mandatory: boolean;
-  };
+  options: OptionsDto;
 
-  @Column({ type: 'date', nullable: false, default: () => 'CURRENT_DATE' })
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+
+  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_DATE' })
   published_at: Date;
 
   @Column({ type: 'timestamp', nullable: true })
   publication_status_changed_at: Date;
+  
+  @DeleteDateColumn()
+  deleted_at: Date;
 
   @OneToMany(() => SurveyQuestion, (survey_question) => survey_question.surveys)
   survey_question: SurveyQuestion;

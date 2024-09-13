@@ -4,47 +4,67 @@ import {
   DeleteDateColumn,
   Entity,
   Generated,
+  JoinColumn,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { IsBoolean, IsNotEmpty, IsUUID, Length, IsIn } from 'class-validator';
 import { QuestionType } from '../question_type/question_type.entity';
 import { SurveyQuestion } from '../survey_question/survey_question.entity';
+import { UUID } from 'crypto';
+import { Abbr } from '../common/value-objects/abbr';
 
 @Entity()
 export class Question {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'char', unique: true })
   @Generated('uuid')
-  uuid: string;
+  @IsUUID()
+  uuid: UUID;
 
-  @Column()
+  @Column({ type: 'int' })
+  @IsNotEmpty({ message: 'Question type ID is required' })
   question_type_id: string;
 
-  @Column()
+  @Column({
+    unique: true,
+    transformer: {
+      to: (value: string) => {
+        return new Abbr(value).getValue();
+      },
+      from: (value: string) => {
+        return value;
+      },
+    },
+  })
   abbr: string;
 
-  @Column()
-  active: string;
+  @Column({ type: 'boolean', default: true })
+  @IsBoolean({ message: 'Active must be a boolean' })
+  @IsNotEmpty({ message: 'Active is required' })
+  active: boolean;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: string;
+  deleted_at: Date;
 
   @ManyToOne(() => QuestionType, (question_type) => question_type.questions)
+  @JoinColumn({ name: 'question_type_id' })
   question_type: QuestionType;
 
-    @OneToMany(
-      () => SurveyQuestion,
-      (survey_question) => survey_question.questions,
-    )
-    survey_question: SurveyQuestion;
+  @OneToMany(
+    () => SurveyQuestion,
+    (survey_question) => survey_question.questions,
+  )
+  survey_question: SurveyQuestion;
 }

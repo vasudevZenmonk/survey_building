@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -12,19 +13,32 @@ import { SurveyType } from '../survey-type/survey-type.entity';
 import { Survey } from '../survey/survey.entity';
 import { surveyGroupOptionEnum } from './enum/survey_group_option.enum';
 import { surveyGroupLanguageEnum } from './enum/survey_group_language.enum';
+import { Abbr } from '../common/value-objects/abbr';
+import { Length } from 'class-validator';
 
 @Entity('survey-group')
 export class SurveyGroup {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column()
+  @Column({ type: 'int', nullable: false })
   survey_type_id: number;
 
-  @Column()
+  @Column({ length: 100, nullable: false })
+  @Length(1, 100, { message: 'Name must be between 1 and 100 characters' })
   name: string;
 
-  @Column()
+  @Column({
+    unique: true,
+    transformer: {
+      to: (value: string) => {
+        return new Abbr(value).getValue();
+      },
+      from: (value: string) => {
+        return value;
+      },
+    },
+  })
   abbr: string;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -34,13 +48,13 @@ export class SurveyGroup {
   };
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: string;
+  deleted_at: Date;
 
   @ManyToOne(() => SurveyType, (survey_type) => survey_type.survey_group)
   survey_types: SurveyType[];
