@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SurveyGroup } from 'src/domain/survey_group/survey-group.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Pagination } from '../common/pagination.repository';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class SurveyGroupRepository extends Repository<SurveyGroup> {
@@ -20,8 +21,8 @@ export class SurveyGroupRepository extends Repository<SurveyGroup> {
 
     const [results, total] = await this.findAndCount({
       where: payload,
-      relations: ['survey_types'],
-      loadRelationIds: true,
+      // relations: ['survey_type'],
+      // loadRelationIds: true,
       take: limit,
       skip: offset,
     });

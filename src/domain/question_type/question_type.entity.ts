@@ -4,7 +4,6 @@ import {
   DeleteDateColumn,
   Entity,
   Generated,
-  JoinTable,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -49,6 +48,5 @@ export class QuestionType {
   deleted_at: Date;
 
   @OneToMany(() => Question, (question) => question.question_type)
-  @JoinTable()
   questions: Question[];
 }

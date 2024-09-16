@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { SurveyGroup } from '../survey_group/survey-group.entity';
 
-@Entity('survey-type')
+@Entity('survey_type')
 export class SurveyType {
   @PrimaryGeneratedColumn()
   id: number;

@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from 'ormconfig';
 import { SurveyGroupModule } from './features/survey-groups/survey-groups.module';
+import { SurveyModule } from './features/survey/survey.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SurveyGroupModule } from './features/survey-groups/survey-groups.module
     }),
     SurveyTypeModule,
     SurveyGroupModule,
+    SurveyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

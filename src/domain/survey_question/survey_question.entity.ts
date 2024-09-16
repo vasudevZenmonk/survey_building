@@ -3,8 +3,8 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -41,8 +41,10 @@ export class SurveyQuestion {
   deleted_at: Date;
 
   @ManyToOne(() => Question, (question) => question.survey_question)
+  @JoinColumn({ name: 'question_id' })
   questions: Question[];
 
   @ManyToOne(() => Survey, (survey) => survey.survey_question)
+  @JoinColumn({ name: 'survey_id' })
   surveys: Survey[];
 }

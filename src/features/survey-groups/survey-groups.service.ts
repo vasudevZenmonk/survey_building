@@ -71,6 +71,8 @@ export class SurveyGroupService {
       },
     };
 
+    console.log(surveyPayload);
+
     const survey = await this.surveyService.createSurvey(surveyPayload);
 
     const questionSourceUUID = payload.survey?.question_source_uuid;

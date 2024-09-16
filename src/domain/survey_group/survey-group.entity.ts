@@ -16,7 +16,7 @@ import { surveyGroupLanguageEnum } from './enum/survey_group_language.enum';
 import { Abbr } from '../common/value-objects/abbr';
 import { Length } from 'class-validator';
 
-@Entity('survey-group')
+@Entity('survey_group')
 export class SurveyGroup {
   @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
@@ -57,6 +57,7 @@ export class SurveyGroup {
   deleted_at: Date;
 
   @ManyToOne(() => SurveyType, (survey_type) => survey_type.survey_group)
+  @JoinColumn({name: 'survey_type_id'})
   survey_types: SurveyType[];
 
   @OneToMany(() => Survey, (survey) => survey.survey_group)
