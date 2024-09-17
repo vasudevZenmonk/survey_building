@@ -10,41 +10,51 @@ import {
 } from 'typeorm';
 import { Survey } from '../survey/survey.entity';
 import { Question } from '../question/question.entity';
+import { IsEmpty, IsNotEmpty } from 'class-validator';
 
 @Entity('survey_question')
 export class SurveyQuestion {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'int' })
+  @IsNotEmpty()
   survey_id: number;
 
-  @Column()
+  @Column({ type: 'int' })
+  @IsNotEmpty()
   question_id: number;
 
-  @Column()
+  @Column({ type: 'int' })
+  @IsNotEmpty()
   order: number;
 
-  @Column()
+  @Column({ type: 'text' })
+  @IsEmpty()
   question_description: string;
 
-  @Column()
+  @Column({ type: 'boolean', default: false })
+  @IsNotEmpty()
   is_mandatory: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: false,
+  })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updated_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at: Date;
 
-  @ManyToOne(() => Question, (question) => question.survey_question)
+  @ManyToOne(() => Question, (question) => question.survey_questions)
   @JoinColumn({ name: 'question_id' })
-  questions: Question[];
+  question: Question;
 
-  @ManyToOne(() => Survey, (survey) => survey.survey_question)
+  @ManyToOne(() => Survey, (survey) => survey.survey_questions)
   @JoinColumn({ name: 'survey_id' })
-  surveys: Survey[];
+  survey: Survey;
 }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-exports.getSessionKey = async () => {
+export const getSessionKey = async () => {
   try {
     return await axios.post(
       `${process.env.LIME_SURVEY_URL}/admin/remotecontrol`,

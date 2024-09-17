@@ -15,6 +15,7 @@ import { surveyGroupOptionEnum } from './enum/survey_group_option.enum';
 import { surveyGroupLanguageEnum } from './enum/survey_group_language.enum';
 import { Abbr } from '../common/value-objects/abbr';
 import { Length } from 'class-validator';
+import { Option } from './value-objects/options';
 
 @Entity('survey_group')
 export class SurveyGroup {
@@ -29,6 +30,7 @@ export class SurveyGroup {
   name: string;
 
   @Column({
+    type: 'varchar',
     unique: true,
     transformer: {
       to: (value: string) => {
@@ -41,23 +43,38 @@ export class SurveyGroup {
   })
   abbr: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({
+    type: 'jsonb',
+    nullable: false,
+    transformer: {
+      to: (value: string) => {
+        return new Option(value).getValue();
+      },
+      from: (value: string) => {
+        return value;
+      },
+    },
+  })
   options: {
     modality: surveyGroupOptionEnum;
     language: surveyGroupLanguageEnum;
   };
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: false,
+  })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updated_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at: Date;
 
   @ManyToOne(() => SurveyType, (survey_type) => survey_type.survey_group)
-  @JoinColumn({name: 'survey_type_id'})
+  @JoinColumn({ name: 'survey_type_id' })
   survey_types: SurveyType[];
 
   @OneToMany(() => Survey, (survey) => survey.survey_group)

@@ -13,10 +13,14 @@ export class SurveyTypeRepository extends Repository<SurveyType> {
     return this.find();
   }
 
-  async getSurveyType(uuid: UUID) {
+  async getSurveyType(uuid: string) {
     return this.findOne({ where: { uuid } });
   }
 
+  async findByUUID(uuid: SurveyType) {
+    console.log(uuid);
+    return this.getId(uuid);
+  }
   async createSurveyType(payload) {
     return this.save(payload);
   }

@@ -6,6 +6,7 @@ import { surveyService } from '../survey/survey.service';
 import { SurveyRepository } from 'src/infrastructure/repositories/survey/survey.repository';
 import { SurveyTypeRepository } from 'src/infrastructure/repositories/survey-type/survey-types.repository';
 import { SurveyQuestionRepository } from 'src/infrastructure/repositories/survey-questions/survey-question.repository';
+import { OutboxMessageRepository } from 'src/infrastructure/repositories/outbox-message/outbox-message.repository';
 
 @Module({
   controllers: [SurveyGroupController],
@@ -16,6 +17,7 @@ import { SurveyQuestionRepository } from 'src/infrastructure/repositories/survey
     SurveyRepository,
     SurveyTypeRepository,
     SurveyQuestionRepository,
+    OutboxMessageRepository
   ],
 })
 export class SurveyGroupModule {}

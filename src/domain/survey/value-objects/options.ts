@@ -1,41 +1,42 @@
 import { BadRequestException } from '@nestjs/common';
 import {
-  IsBoolean,
-  IsIn,
   IsNotEmpty,
-  IsObject,
+  IsString,
+  IsUrl,
+  IsBoolean,
   validateSync,
 } from 'class-validator';
-import { surveyGroupLanguageEnum } from 'src/domain/survey_group/enum/survey_group_language.enum';
-import { surveyGroupOptionEnum } from 'src/domain/survey_group/enum/survey_group_option.enum';
 
-export class active {
-  @IsObject()
-  private readonly value;
+export class Options {
+  @IsNotEmpty({ message: 'URL is required' })
+  @IsString({ message: 'URL must be a string' })
+  @IsUrl({}, { message: 'Invalid URL format' })
+  private readonly url: string;
 
-  constructor(value) {
-    this.value = value;
-    this.validate(value);
+  @IsNotEmpty({ message: 'is_mandatory is required' })
+  @IsBoolean({ message: 'is_mandatory must be a boolean' })
+  private readonly is_mandatory: boolean;
+
+  constructor(url: string, is_mandatory: boolean) {
+    this.url = url;
+    this.is_mandatory = is_mandatory;
+    this.validate();
   }
 
-  private validate(value: any) {
-    if (typeof value !== 'object') {
-      throw new BadRequestException('Invalid Object');
+  private validate() {
+    const errors = validateSync(this);
+    if (errors.length > 0) {
+      throw new BadRequestException(
+        errors.map((error) => Object.values(error.constraints)).join(', '),
+      );
     }
-    if (!value.modality) {
-      throw new BadRequestException('Modality missing');
-    } else if (!(value.modality in surveyGroupOptionEnum)) {
-      throw new BadRequestException('Invalid Modality');
-    }
-    if (!value.language) {
-      throw new BadRequestException('Language Missing');
-    } else if (!(value.language in surveyGroupLanguageEnum)) {
-      throw new BadRequestException('Invalid Language');
-    }
-    return true;
   }
 
-  getValue() {
-    return this.value;
+  getUrl() {
+    return this.url;
+  }
+
+  isMandatory() {
+    return this.is_mandatory;
   }
 }

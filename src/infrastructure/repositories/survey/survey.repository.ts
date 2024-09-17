@@ -5,6 +5,8 @@ import { DataSource, Repository } from 'typeorm';
 import { Pagination } from '../common/pagination.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SurveyGroupRepository } from '../survey-group/survey-group.repository';
+import { getSessionKey } from 'src/features/common/lime-survey/get-session-key';
+import { addSurvey } from 'src/features/common/lime-survey/add-session';
 
 @Injectable()
 export class SurveyRepository extends Repository<Survey> {
@@ -93,73 +95,21 @@ export class SurveyRepository extends Repository<Survey> {
     return this.create(survey);
   }
 
-  async publishSurveyById(survey_uuid) {
-    const survey = await this.getSurveyById(
-      survey_uuid,
-      { get_questions: true, get_survey_group: true },
-      true
-    );
+  async findAllSurveyByCriteria(criteria: any = {}) {
+    const { survey_group_id, status } = criteria || {};
 
-    if (!survey) throw new NotFoundError('Survey not found');
-    if (survey.isPublished())
-      throw new ConflictError('Survey is already published');
-    if (+survey.survey_question.length === 0)
-      throw new ForbiddenError(
-        'Survey must have at least one question to be published',
-      );
+    const whereCondition: any = {};
 
-    const getSessionKeyResponse = await limeSurveyService.getSessionKey();
-
-    const sessionKey = getSessionKeyResponse.data?.result;
-
-    if (!sessionKey || typeof sessionKey !== 'string') {
-      throw new BadGatewayError(
-        `An error occurred while getting session key for Lime Survey: ${JSON.stringify(getSessionKeyResponse.data.result)}`,
-      );
+    if (survey_group_id) {
+      whereCondition.survey_group_id = survey_group_id;
     }
 
-    const addSurveyResponse = await limeSurveyService.addSurvey(
-      sessionKey,
-      survey,
-      survey.survey_group.options.language,
-    );
-
-    const surveyReferenceCode = addSurveyResponse.data?.result;
-
-    if (!surveyReferenceCode || typeof surveyReferenceCode !== 'number') {
-      throw new BadGatewayError(
-        `An error occurred while adding survey to Lime Survey: ${JSON.stringify(addSurveyResponse.data.result)}`,
-      );
+    if (status) {
+      whereCondition.status = status;
     }
 
-    const publishedSurvey = await surveyRepository.findAllSurveyByCriteria(
-      { survey_group_id: survey.survey_group_id, status: State.ENUM.PUBLISHED },
-      transaction,
-    );
-
-    await Promise.all(
-      publishedSurvey.map(async (surveyInstance) => {
-        surveyInstance.deactivate();
-        await surveyRepository.updateSurveyById(
-          surveyInstance.uuid,
-          surveyInstance.toJSON(),
-          transaction,
-        );
-      }),
-    );
-
-    await survey.publish(surveyReferenceCode);
-    await surveyRepository.updateSurveyById(
-      survey_uuid,
-      survey.toJSON(),
-      transaction,
-    );
-
-    await outboxMessageRepository.initializeOutboxMessage(
-      new SurveyPublished(survey),
-      transaction,
-    );
-    await transactionRepository.commitTransaction(transaction);
-    return survey;
+    return this.find({
+      where: whereCondition,
+    });
   }
 }

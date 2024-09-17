@@ -18,12 +18,14 @@ export class Abbr {
   private readonly value: string;
 
   constructor(value: string) {
+    console.log(value);
     this.value = value;
     this.validate();
   }
 
   private validate() {
     const errors = validateSync(this);
+
     if (errors.length > 0) {
       throw new BadRequestException('Invalid abbr');
     }

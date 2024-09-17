@@ -20,7 +20,7 @@ export class Url {
   private validate() {
     const errors = validateSync(this);
     if (errors.length > 0) {
-      throw new BadRequestException('Invalid name');
+      throw new BadRequestException('Invalid url');
     }
   }
 

@@ -26,6 +26,7 @@ export class QuestionType {
   name: string;
 
   @Column({
+    type: 'varchar',
     unique: true,
     transformer: {
       to: (value: string) => {
@@ -38,13 +39,17 @@ export class QuestionType {
   })
   abbr: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: false,
+  })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updated_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at: Date;
 
   @OneToMany(() => Question, (question) => question.question_type)

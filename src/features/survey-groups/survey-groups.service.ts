@@ -44,9 +44,14 @@ export class SurveyGroupService {
     const surveyType = await this.surveyTypeRepository.getSurveyType(
       payload.survey_type_uuid,
     );
+
+    // const surveyType = await this.surveyTypeRepository.findByUUID(
+    //   payload.survey_type_uuid,
+    // );
     if (!surveyType) {
       throw new Error('Survey Type doesnt exist');
     }
+    console.log(payload.options.modality);
     const surveyGroupPayload = {
       name: payload.name,
       survey_type_id: surveyType.id,

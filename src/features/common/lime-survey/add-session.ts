@@ -10,7 +10,7 @@ const LimeSurveyLanguageMapping = {
   zh_CN: 'zh-Hans',
 };
 
-exports.addSurvey = async (sSessionKey, survey, language) => {
+export const addSurvey = async (sSessionKey, survey, language) => {
   const params = {
     sSessionKey: sSessionKey,
     iSurveyID: survey.uuid,

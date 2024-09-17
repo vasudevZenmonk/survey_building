@@ -13,18 +13,11 @@ import {
 import { surveyStateEnum } from './enum/survey-state.enum';
 import { SurveyGroup } from '../survey_group/survey-group.entity';
 import { SurveyQuestion } from '../survey_question/survey_question.entity';
-import {
-  IsBoolean,
-  IsEmpty,
-  IsNotEmpty,
-  isURL,
-  IsUrl,
-  Length,
-} from 'class-validator';
-import { OptionsDto } from './dto/options.dto';
+import { IsEnum, Length } from 'class-validator';
 import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { Abbr } from '../common/value-objects/abbr';
-import { Url } from './value-objects/url';
+import { Options } from './value-objects/options';
+import { OptionsInterface } from './interface/option.interface';
 
 @Entity('survey')
 export class Survey {
@@ -46,6 +39,7 @@ export class Survey {
   name: string;
 
   @Column({
+    type: 'varchar',
     unique: true,
     transformer: {
       to: (value: string) => {
@@ -63,33 +57,34 @@ export class Survey {
     enum: surveyStateEnum,
     default: surveyStateEnum.IN_CONSTRUCTION,
   })
+  @IsEnum(surveyStateEnum, { message: 'Invalid survey state' })
   state: surveyStateEnum;
 
   @Column({
     type: 'jsonb',
-    nullable: true,
+    nullable: false,
     transformer: {
-      to: (value: any) => {
-        return {
-          ...value,
-          url: new Url(value.url).getValue(),
-        };
-      },
-      from: (value: any) => {
-        return value;
-      },
+      to: (value: Options) => ({
+        url: value.getUrl(),
+        is_mandatory: value.isMandatory(),
+      }),
+      from: (value: any) => value,
     },
   })
-  options: {
-    url: string;
-    is_mandatory: boolean;
-  };
+  options: OptionsInterface;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: false,
+  })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  deleted_at: Date;
 
   @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_DATE' })
   published_at: Date;
@@ -97,11 +92,8 @@ export class Survey {
   @Column({ type: 'timestamp', nullable: true })
   publication_status_changed_at: Date;
 
-  @DeleteDateColumn()
-  deleted_at: Date;
-
-  @OneToMany(() => SurveyQuestion, (survey_question) => survey_question.surveys)
-  survey_question: SurveyQuestion;
+  @OneToMany(() => SurveyQuestion, (survey_question) => survey_question.survey)
+  survey_questions: SurveyQuestion[];
 
   @ManyToOne(() => SurveyGroup, (survey_group) => survey_group.surveys)
   @JoinColumn({ name: 'survey_group_id' })

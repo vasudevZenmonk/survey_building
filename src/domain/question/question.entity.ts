@@ -14,7 +14,6 @@ import {
 import { IsBoolean, IsNotEmpty, IsUUID, Length, IsIn } from 'class-validator';
 import { QuestionType } from '../question_type/question_type.entity';
 import { SurveyQuestion } from '../survey_question/survey_question.entity';
-import { UUID } from 'crypto';
 import { Abbr } from '../common/value-objects/abbr';
 
 @Entity()
@@ -25,16 +24,22 @@ export class Question {
   @Column({ type: 'char', unique: true })
   @Generated('uuid')
   @IsUUID()
-  uuid: UUID;
+  uuid: string;
 
   @Column({ type: 'int' })
   @IsNotEmpty({ message: 'Question type ID is required' })
   question_type_id: string;
 
+  @Column({ type: 'text' })
+  @IsNotEmpty({ message: 'Question text is required' })
+  description: string;
+
   @Column({
+    type: 'varchar',
     unique: true,
     transformer: {
       to: (value: string) => {
+        console.log(value)
         return new Abbr(value).getValue();
       },
       from: (value: string) => {
@@ -49,13 +54,17 @@ export class Question {
   @IsNotEmpty({ message: 'Active is required' })
   active: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: false,
+  })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updated_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at: Date;
 
   @ManyToOne(() => QuestionType, (question_type) => question_type.questions)
@@ -64,7 +73,7 @@ export class Question {
 
   @OneToMany(
     () => SurveyQuestion,
-    (survey_question) => survey_question.questions,
+    (survey_question) => survey_question.question,
   )
-  survey_question: SurveyQuestion;
+  survey_questions: SurveyQuestion[];
 }

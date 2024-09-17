@@ -27,11 +27,14 @@ export class SurveyController {
   ) {
     try {
       console.log(body);
-      const update=await this.surveyService.updateSurveyById(survey_uuid, body);
+      const update = await this.surveyService.updateSurveyById(
+        survey_uuid,
+        body,
+      );
       console.log(update);
       return update;
     } catch (error) {
-      throw new Error('Error Occurred while upgrading'+ error);
+      throw new Error('Error Occurred while upgrading' + error);
     }
   }
 }
