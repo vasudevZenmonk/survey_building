@@ -6,6 +6,7 @@ import { SurveyTypeRepository } from 'src/infrastructure/repositories/survey-typ
 import { SurveyRepository } from 'src/infrastructure/repositories/survey/survey.repository';
 import { SurveyQuestionRepository } from 'src/infrastructure/repositories/survey-questions/survey-question.repository';
 import { SurveyGroup } from 'src/domain/survey_group/survey-group.entity';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class SurveyGroupService {
@@ -19,6 +20,7 @@ export class SurveyGroupService {
     @InjectRepository(SurveyQuestionRepository)
     private surveyQuestionRepository: SurveyQuestionRepository,
     private surveyService: surveyService,
+    private dataSource: DataSource,
   ) {}
 
   async getFilteredSurveyGroups(payload) {
@@ -41,70 +43,85 @@ export class SurveyGroupService {
   }
 
   async createSurveyGroup(payload) {
-    const surveyType = await this.surveyTypeRepository.getSurveyType(
-      payload.survey_type_uuid,
-    );
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    // const surveyType = await this.surveyTypeRepository.findByUUID(
-    //   payload.survey_type_uuid,
-    // );
-    if (!surveyType) {
-      throw new Error('Survey Type doesnt exist');
-    }
-    console.log(payload.options.modality);
-    const surveyGroupPayload = {
-      name: payload.name,
-      survey_type_id: surveyType.id,
-      abbr: payload.abbr,
-      options: {
-        language: payload.options?.language,
-        modality: payload.options?.modality,
-      },
-    };
+    // Start the transaction
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const surveyGroup =
-      await this.surveyGroupRepository.createSurveyGroup(surveyGroupPayload);
-    //   if(!payload.survey) throw new Error('Survey is required.');
+    try {
+      const surveyType = await this.surveyTypeRepository.getSurveyType(
+        payload.survey_type_uuid,
+      );
+      if (!surveyType) {
+        throw new Error('Survey Type doesn’t exist');
+      }
 
-    const surveyPayload = {
-      survey_group_id: surveyGroup.id,
-      name: payload.survey?.name,
-      abbr: payload.survey?.abbr,
-      options: {
-        is_mandatory: payload.survey?.options?.is_mandatory,
-        url: payload.survey?.options?.url,
-      },
-    };
+      const surveyGroupPayload = {
+        name: payload.name,
+        survey_type_id: surveyType.id,
+        abbr: payload.abbr,
+        options: {
+          language: payload.options?.language,
+          modality: payload.options?.modality,
+        },
+      };
 
-    console.log(surveyPayload);
-
-    const survey = await this.surveyService.createSurvey(surveyPayload);
-
-    const questionSourceUUID = payload.survey?.question_source_uuid;
-
-    if (questionSourceUUID) {
-      const questionSourceSurvey =
-        await this.surveyRepository.getSurveyByUUID(questionSourceUUID);
-      if (!questionSourceSurvey) throw new Error('No Source Survey Exists');
-      const questionSOurceQuestions =
-        await this.surveyQuestionRepository.getSurveyQuestionBySurveyUUID(
-          questionSourceSurvey.id,
-        );
-
-      const surveyQuestionsPayload = questionSOurceQuestions.map(
-        (question) => ({
-          survey_id: survey.id,
-          question_id: question.question_id,
-          question_description: question.question_description,
-          is_mandatory: question.is_mandatory,
-          order: question.order,
-        }),
+      const surveyGroup = await queryRunner.manager.save(
+        this.surveyGroupRepository.create(surveyGroupPayload),
       );
 
-      await this.surveyQuestionRepository.bulkCreate(surveyQuestionsPayload);
-    }
+      const surveyPayload = {
+        survey_group_id: surveyGroup.id,
+        name: payload.survey?.name,
+        abbr: payload.survey?.abbr,
+        options: {
+          is_mandatory: payload.survey?.options?.is_mandatory,
+          url: payload.survey?.options?.url,
+        },
+      };
 
-    return { survey, surveyGroup };
+      console.log(surveyPayload);
+
+      const survey = await this.surveyService.createSurvey(surveyPayload, queryRunner);
+
+      const questionSourceUUID = payload.survey?.question_source_uuid;
+
+      if (questionSourceUUID) {
+        const questionSourceSurvey =
+          await this.surveyRepository.getSurveyByUUID(questionSourceUUID);
+        if (!questionSourceSurvey) throw new Error('No Source Survey Exists');
+
+        const questionSourceQuestions =
+          await this.surveyQuestionRepository.getSurveyQuestionBySurveyUUID(
+            questionSourceSurvey.id,
+          );
+
+        const surveyQuestionsPayload = questionSourceQuestions.map(
+          (question) => ({
+            survey_id: survey.id,
+            question_id: question.question_id,
+            question_description: question.question_description,
+            is_mandatory: question.is_mandatory,
+            order: question.order,
+          }),
+        );
+
+        await this.surveyQuestionRepository.bulkCreate(surveyQuestionsPayload);
+      }
+
+      // Commit the transaction if everything is successful
+      await queryRunner.commitTransaction();
+
+      return { survey, surveyGroup };
+    } catch (error) {
+      // Rollback the transaction in case of an error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release the query runner after finishing
+      await queryRunner.release();
+    }
   }
 
   async getSurveyGroupById(id: number): Promise<SurveyGroup> {

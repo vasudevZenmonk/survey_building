@@ -9,6 +9,8 @@ import { addSurvey } from '../common/lime-survey/add-session';
 import { surveyStateEnum } from 'src/domain/survey/enum/survey-state.enum';
 import { OutboxMessageRepository } from 'src/infrastructure/repositories/outbox-message/outbox-message.repository';
 import { SurveyPublished } from 'src/domain/survey/events/survey-published';
+import { QueryRunner } from 'typeorm';
+import { QuestionRepository } from 'src/infrastructure/repositories/question/question.repository';
 
 @Injectable()
 export class surveyService {
@@ -17,10 +19,19 @@ export class surveyService {
     private surveyRepository: SurveyRepository,
     @InjectRepository(OutboxMessageRepository)
     private outboxMessageRepository: OutboxMessageRepository,
+  
   ) {}
 
-  async createSurvey(payload: createSurveyDto): Promise<Survey> {
-    return this.surveyRepository.createSurvey(payload);
+  async createSurvey(surveyPayload, queryRunner?: QueryRunner) {
+    const survey = await this.surveyRepository.createSurvey(surveyPayload);
+
+    if (queryRunner) {
+      // Use the queryRunner's manager to save within the transaction
+      return await queryRunner.manager.save(survey);
+    } else {
+      // Regular save if no transaction context is provided
+      return await this.surveyRepository.save(survey);
+    }
   }
 
   async getFilteredSurveys(payload) {
@@ -118,4 +129,6 @@ export class surveyService {
     );
     return survey;
   }
+
+ 
 }

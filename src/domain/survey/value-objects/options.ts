@@ -5,9 +5,11 @@ import {
   IsUrl,
   IsBoolean,
   validateSync,
+  IsOptional,
 } from 'class-validator';
 
 export class Options {
+  @IsOptional()
   @IsNotEmpty({ message: 'URL is required' })
   @IsString({ message: 'URL must be a string' })
   @IsUrl({}, { message: 'Invalid URL format' })
@@ -18,6 +20,7 @@ export class Options {
   private readonly is_mandatory: boolean;
 
   constructor(url: string, is_mandatory: boolean) {
+    console.log(url, is_mandatory);
     this.url = url;
     this.is_mandatory = is_mandatory;
     this.validate();

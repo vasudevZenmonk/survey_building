@@ -45,6 +45,12 @@ class ConflictError extends CustomError {
   }
 }
 
+class InvalidPayloadError extends CustomError {
+  constructor(message) {
+    super(message || 'Invalid payload', HTTP_STATUS_CODE.BAD_REQUEST);
+  }
+}
+
 module.exports = {
   BadGatewayError,
   GatewayTimeoutError,

@@ -63,13 +63,13 @@ export class Survey {
   @Column({
     type: 'jsonb',
     nullable: false,
-    transformer: {
-      to: (value: Options) => ({
-        url: value.getUrl(),
-        is_mandatory: value.isMandatory(),
-      }),
-      from: (value: any) => value,
-    },
+    // transformer: {
+    //   to: (value: Options) => ({
+    //     url: value.getUrl(),
+    //     is_mandatory: value.isMandatory(),
+    //   }),
+    //   from: (value: any) => value,
+    // },
   })
   options: OptionsInterface;
 

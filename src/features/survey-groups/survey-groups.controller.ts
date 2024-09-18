@@ -11,6 +11,7 @@ import { CreateSurveyGroupDto } from './survey-groups.dto';
 import { TransactionInterceptor } from 'src/infrastructure/interceptor/transaction.interceptor';
 
 @Controller('survey-groups')
+@UseInterceptors(TransactionInterceptor)
 export class SurveyGroupController {
   constructor(private readonly surveyGroupService: SurveyGroupService) {}
 
@@ -34,7 +35,6 @@ export class SurveyGroupController {
   }
 
   @Post('')
-  @UseInterceptors(TransactionInterceptor)
   async createSurveyGroup(@Body() body: CreateSurveyGroupDto) {
     return this.surveyGroupService.createSurveyGroup(body);
   }
